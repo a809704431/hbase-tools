@@ -23,6 +23,8 @@ import com.kakao.hbase.common.HBaseClient;
 import com.kakao.hbase.common.InvalidTableException;
 import com.kakao.hbase.common.util.Util;
 import com.kakao.hbase.manager.command.Command;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -37,8 +39,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class Manager {
-    public static final String INVALID_COMMAND = "Invalid command";
-    public static final String INVALID_ZOOKEEPER = "Invalid zookeeper quorum";
+    static final String INVALID_COMMAND = "Invalid command";
+    private static final String INVALID_ZOOKEEPER = "Invalid zookeeper quorum";
     private static final Set<Class<? extends Command>> commandSet;
 
     static {
@@ -51,7 +53,7 @@ public class Manager {
     private final Args args;
     private final String commandName;
 
-    public Manager(Args args, String commandName) throws Exception {
+    public Manager(Args args, String commandName) {
         this.args = args;
         this.commandName = commandName;
     }
@@ -100,7 +102,7 @@ public class Manager {
         return new Reflections(new ConfigurationBuilder()
             .setScanners(new SubTypesScanner(false /* don't exclude Object.class */), new ResourcesScanner())
             .setUrls(ClasspathHelper.forManifest(ClasspathHelper.forClassLoader(
-                classLoadersList.toArray(new ClassLoader[classLoadersList.size()]))))
+                classLoadersList.toArray(new ClassLoader[0]))))
             .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix("com.kakao.hbase.manager.command"))));
     }
 
@@ -166,7 +168,8 @@ public class Manager {
     }
 
     public void run() throws Exception {
-        try (HBaseAdmin admin = HBaseClient.getAdmin(args)) {
+        try (Connection connection = HBaseClient.getConnection(args);
+             Admin admin = connection.getAdmin()) {
             Command command = createCommand(commandName, admin, args);
             command.run();
             Util.sendAlertAfterSuccess(args, this.getClass());
@@ -176,10 +179,10 @@ public class Manager {
         }
     }
 
-    private Command createCommand(String commandName, HBaseAdmin admin, Args args) throws Exception {
+    private Command createCommand(String commandName, Admin admin, Args args) throws Exception {
         for (Class<? extends Command> c : commandSet) {
             if (c.getSimpleName().toLowerCase().equals(commandName.toLowerCase())) {
-                Constructor constructor = c.getDeclaredConstructor(HBaseAdmin.class, Args.class);
+                Constructor constructor = c.getDeclaredConstructor(Admin.class, Args.class);
                 constructor.setAccessible(true);
                 return (Command) constructor.newInstance(admin, args);
             }
