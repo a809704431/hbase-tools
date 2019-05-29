@@ -140,7 +140,7 @@ public class ManagerTest extends TestBase {
         String commandName = "assign";
         String[] args = {commandName, "zookeeper", "table"};
         Args argsObject = Manager.parseArgs(args);
-        new Manager(argsObject, commandName);
+        new Manager(connection, argsObject, commandName);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class ManagerTest extends TestBase {
         String[] args = {commandName, "localhost", "balancer", "invalid",
                 "--" + Args.OPTION_AFTER_FAILURE + "=" + AlertSenderTest.ALERT_SCRIPT};
         Args argsObject = Manager.parseArgs(args);
-        Manager manager = new Manager(argsObject, commandName);
+        Manager manager = new Manager(connection, argsObject, commandName);
 
         int sendCountBefore = AlertSender.getSendCount();
 
@@ -168,11 +168,10 @@ public class ManagerTest extends TestBase {
         String[] args = {commandName, "localhost", "balancer", "on",
                 "--" + Args.OPTION_AFTER_SUCCESS + "=" + AlertSenderTest.ALERT_SCRIPT};
         Args argsObject = Manager.parseArgs(args);
-        Manager manager = new Manager(argsObject, commandName);
+        Manager manager = new Manager(connection, argsObject, commandName);
 
         int sendCountBefore = AlertSender.getSendCount();
 
-        // fixme
         manager.run();
 
         Assert.assertEquals(sendCountBefore + 1, AlertSender.getSendCount());
@@ -184,7 +183,7 @@ public class ManagerTest extends TestBase {
         String[] args = {commandName, "localhost", "balancer", "invalid",
                 "--" + Args.OPTION_AFTER_FINISH + "=" + AlertSenderTest.ALERT_SCRIPT};
         Args argsObject = Manager.parseArgs(args);
-        Manager manager = new Manager(argsObject, commandName);
+        Manager manager = new Manager(connection, argsObject, commandName);
 
         int sendCountBefore = AlertSender.getSendCount();
 
@@ -203,11 +202,10 @@ public class ManagerTest extends TestBase {
         String[] args = {commandName, "localhost", "balancer", "on",
                 "--" + Args.OPTION_AFTER_FINISH + "=" + AlertSenderTest.ALERT_SCRIPT};
         Args argsObject = Manager.parseArgs(args);
-        Manager manager = new Manager(argsObject, commandName);
+        Manager manager = new Manager(connection, argsObject, commandName);
 
         int sendCountBefore = AlertSender.getSendCount();
 
-        // fixme
         manager.run();
 
         Assert.assertEquals(sendCountBefore + 1, AlertSender.getSendCount());

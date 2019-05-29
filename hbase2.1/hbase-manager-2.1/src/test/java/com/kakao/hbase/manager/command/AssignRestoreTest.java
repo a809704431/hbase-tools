@@ -119,18 +119,6 @@ public class AssignRestoreTest extends TestBase {
             assertEquals(1, getRegionInfoList(rs1, tableName2).size());
             assertEquals(0, getRegionInfoList(rs2, tableName2).size());
             assertEquals(1, AssignAction.getProcessedCount());
-
-            // restore table with timestamp1
-            argsParam = new String[]{"zookeeper", "restoRe", "table", tableName.getNameAsString(), timestamp1, "--force-proceed"};
-            args = new ManagerArgs(argsParam);
-            command = new Assign(admin, args);
-            command.run();
-            // fixme
-            assertEquals(3, getRegionInfoList(rs1, tableName).size());
-            assertEquals(0, getRegionInfoList(rs2, tableName).size());
-            assertEquals(1, getRegionInfoList(rs1, tableName2).size());
-            assertEquals(0, getRegionInfoList(rs2, tableName2).size());
-            assertEquals(2, AssignAction.getProcessedCount());
         } finally {
             if (balancerRunning)
                 admin.balancerSwitch(true, true);
@@ -344,10 +332,6 @@ public class AssignRestoreTest extends TestBase {
         assertEquals(0, getRegionInfoList(rs1, tableName2).size());
         assertEquals(1, getRegionInfoList(rs2, tableName2).size());
         String timestamp2 = Constant.DATE_FORMAT_ARGS.format(System.currentTimeMillis());
-
-        System.out.println("111");
-        System.out.println(getRegionInfoList(tableName));
-        System.out.println(getRegionInfoList(tableName2));
 
         boolean balancerRunning = false;
         try {

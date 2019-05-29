@@ -25,6 +25,7 @@ import com.kakao.hbase.common.util.Util;
 import com.kakao.hbase.manager.command.Command;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -50,10 +51,12 @@ public class Manager {
         commandSet = reflections.getSubTypesOf(Command.class);
     }
 
+    private final Connection connection;
     private final Args args;
     private final String commandName;
 
-    public Manager(Args args, String commandName) {
+    public Manager(Connection connection, Args args, String commandName) {
+        this.connection = connection;
         this.args = args;
         this.commandName = commandName;
     }
@@ -78,8 +81,8 @@ public class Manager {
             throw e;
         }
 
-        try {
-            new Manager(argsObject, commandName).run();
+        try (Connection connection = HBaseClient.getConnection(argsObject)){
+            new Manager(connection, argsObject, commandName).run();
         } catch (InvocationTargetException e) {
             printError(e.getCause().getMessage() + "\n");
             printUsage(commandName);
@@ -168,8 +171,7 @@ public class Manager {
     }
 
     public void run() throws Exception {
-        try (Connection connection = HBaseClient.getConnection(args);
-             Admin admin = connection.getAdmin()) {
+        try (Admin admin = connection.getAdmin()) {
             Command command = createCommand(commandName, admin, args);
             command.run();
             Util.sendAlertAfterSuccess(args, this.getClass());

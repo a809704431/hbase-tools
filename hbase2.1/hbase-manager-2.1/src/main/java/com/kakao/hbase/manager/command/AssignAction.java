@@ -594,7 +594,7 @@ enum AssignAction {
     private static int progress = 1;
 
     private static void setBalancerRunning(Admin admin, boolean targetStatus) throws IOException {
-        boolean balancerRunning = admin.setBalancerRunning(targetStatus, true);
+        boolean balancerRunning = admin.balancerSwitch(targetStatus, true);
         if (targetStatus) {
             if (balancerRunning) {
                 System.out.println("Automatic balancer is already turned on.");

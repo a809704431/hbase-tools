@@ -81,6 +81,7 @@ public class TestBase extends SecureTestUtil {
                 conf.setInt("hbase.master.info.port", -1);
                 conf.set("zookeeper.session.timeout", "3600000");
                 conf.set("dfs.client.socket-timeout", "3600000");
+                conf.set("hbase.zookeeper.property.maxSessionTimeout", "3600000");
                 hbase = new HBaseTestingUtility(conf);
 
                 if (securedCluster) {
